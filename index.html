@@ -1,1 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Template Editor</title>
+    <style>
+        /* Add your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            margin: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .editor {
+            flex: 1;
+            margin-bottom: 20px;
+        }
+        .preview {
+            flex: 1;
+            background-color: #f2f2f2;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #codeEditor {
+            width: 100%;
+            min-height: 300px;
+        }
+        .btn {
+            display: block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            background-color: #4CAF50;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .sample-select {
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <select id="sampleSelect" class="sample-select">
+            <option value="template1">Template 1</option>
+            <option value="template2">Template 2</option>
+            <option value="template3">Template 3</option>
+        </select>
+        <div class="editor">
+            <div id="codeEditor"></div>
+        </div>
+        <button id="copyBtn" class="btn">Copy HTML</button>
+        <button id="downloadBtn" class="btn">Download HTML</button>
+        <div class="preview" id="preview">
+            <!-- Preview content will be inserted here -->
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <script>
+        // Sample templates
+        var templates = {
+            template1: `<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Template 1</title>
+    <style>
+        /* Add your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        .header {
+            background-color: #f2f2f2;
+            padding: 20px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            background-color: #f2f2f2;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Email Template 1</h1>
+        </div>
+
+        <div class="content">
+            <p>Hello,</p>
+            <p>This is the content of Email Template 1.</p>
+        </div>
+
+        <div class="footer">
+            <p>Footer</p>
+        </div>
+    </div>
+</body>
+</html>`,
+
+            template2: `<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Template 2</title>
+    <style>
+        /* Add your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        .header {
+            background-color: #f2f2f2;
+            padding: 20px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            background-color: #f2f2f2;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Email Template 2</h1>
+        </div>
+
+        <div class="content">
+            <p>Hello,</p>
+            <p>This is the content of Email Template 2.</p>
+        </div>
+
+        <div class="footer">
+            <p>Footer</p>
+        </div>
+    </div>
+</body>
+</html>`,
+
+            template3: `<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Template 3</title>
+    <style>
+        /* Add your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        .header {
+            background-color: #f2f2f2;
+            padding: 20px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            background-color: #f2f2f2;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Email Template 3</h1>
+        </div>
+
+        <div class="content">
+            <p>Hello,</p>
+            <p>This is the content of Email Template 3.</p>
+        </div>
+
+        <div class="footer">
+            <p>Footer</p>
+        </div>
+    </div>
+</body>
+</html>`
+        };
+
+        // Initialize Ace Editor
+        var codeEditor = ace.edit("codeEditor");
+        codeEditor.setTheme("ace/theme/monokai");
+        codeEditor.session.setMode("ace/mode/html");
+        codeEditor.setValue(templates.template1);
+
+        // Automatically adjust editor height
+        codeEditor.setAutoScrollEditorIntoView(true);
+        codeEditor.setOption("maxLines", 50);
+        codeEditor.setOption("minLines", 10);
+
+        // Update preview on code change
+        codeEditor.session.on("change", function() {
+            var code = codeEditor.getValue();
+            var preview = document.getElementById("preview");
+            preview.innerHTML = code;
+        });
+
+        // Sample select change event
+        var sampleSelect = document.getElementById("sampleSelect");
+        sampleSelect.addEventListener("change", function() {
+            var selectedTemplate = sampleSelect.value;
+            codeEditor.setValue(templates[selectedTemplate]);
+        });
+
+        // Copy HTML to clipboard
+        var copyBtn = document.getElementById("copyBtn");
+        copyBtn.addEventListener("click", function() {
+            var code = codeEditor.getValue();
+            copyToClipboard(code);
+            alert("HTML code copied to clipboard!");
+        });
+
+        // Download HTML
+        var downloadBtn = document.getElementById("downloadBtn");
+        downloadBtn.addEventListener("click", function() {
+            var code = codeEditor.getValue();
+            downloadHTML(code);
+        });
+
+        // Function to copy text to clipboard
+        function copyToClipboard(text) {
+            var tempInput = document.createElement("textarea");
+            tempInput.style.position = "fixed";
+            tempInput.style.opacity = 0;
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.focus();
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+        }
+
+        // Function to download HTML as a file
+        function downloadHTML(html) {
+            var element = document.createElement("a");
+            element.setAttribute("href", "data:text/html;charset=utf-8," + encodeURIComponent(html));
+            element.setAttribute("download", "email_template.html");
+            element.style.display = "none";
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+    </script>
+</body>
+</html>
 
